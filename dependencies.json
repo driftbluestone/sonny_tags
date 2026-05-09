@@ -1,0 +1,5 @@
+{
+    "pip":["Levenshtein"],
+    "extensions":[],
+    "other":["docker @ https://docker.com"]
+}
