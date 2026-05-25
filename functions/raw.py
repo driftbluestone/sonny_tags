@@ -12,6 +12,10 @@ async def tag_raw(ctx: commands.Context, message: list):
     tag = message[0]
     if tag == "": return await ctx.reply(":information_source: %t raw `tag`")
     if tag in SPECIAL_TAGS or tag == "admin":
+        if tag == "raw":
+            return await ctx.reply(f"why dont you raw some bitches")
+        if tag == "search":
+            return await ctx.reply(f"why dont you search for some bitches")
         return await ctx.reply(f"{tag} is a special tag.")
     data, filepath, exists, _ = await tag_utils.get_tag_data(ctx, tag)
     if not exists: return await ctx.reply(f":warning: Tag **{tag}** does not exist.")

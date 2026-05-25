@@ -45,8 +45,8 @@ async def tag_delete(ctx: commands.Context, tag: list, override: bool = False, s
 
     # Save the data
     user = users.get(int(data["owner"]))
-    user["tags"].remove(tag)
-    users.set_field(user["id"], "tags", user["tags"])
+    user["sonny_tags:tags"].remove(tag)
+    users.set_field(user["id"], "sonny_tags:tags", user["sonny_tags:tags"])
 
     if not silent:
         return await ctx.reply(f":white_check_mark: Tag **{tag}**{deleted_aliases} deleted.")

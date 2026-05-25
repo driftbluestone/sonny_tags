@@ -14,7 +14,7 @@ async def tag_list(ctx: commands.Context, message: list):
     if message:
         user = await users.get(message)
         if not user: return await ctx.reply(":warning: Couldn't find user.")
-        tag_list = user["tags"]
+        tag_list = user["sonny_tags:tags"]
         tags = f"`{"`, `".join([x for x in tag_list])}`"
     else:
         tag_list = [x[:-5] for x in os.listdir(f"{DIR}/data/extensions/sonny_tags/tags") if x.endswith(".json")]
@@ -25,11 +25,14 @@ async def tag_list(ctx: commands.Context, message: list):
     if not tag_list and not message:
         return await ctx.reply(f"No tags found.")
     if len(tags) >= 1900:
-        pass
-        # with open(f"{DIR}/data/tags/history/message.txt", "w") as file:
-        #     file.write(tags)
-        #     if message: return await ctx.reply(f"**<@{user["id"]}>'s tags ({tag_count})**:", file=file)
-        #     else: return await ctx.reply(f"**Tags in this server ({tag_count})**:", file=file)
+        with open(f"{DIR}/data/extensions/sonny_tags/message.txt", "w") as file:
+            file.write(tags)
+        if message:
+            return await ctx.reply(f"**<@{user["id"]}>'s tags ({tag_count})**:", file=file)
+        else:
+            return await ctx.reply(f"**Tags in this server ({tag_count})**:", file=file)
     else:
-        if message: return await ctx.reply(f"**<@{user["id"]}>'s tags ({tag_count})**:\n{tags}")
-        else: return await ctx.reply(f"**Tags in this server ({tag_count})**:\n{tags}")
+        if message:
+            return await ctx.reply(f"**<@{user["id"]}>'s tags ({tag_count})**:\n{tags}")
+        else:
+            return await ctx.reply(f"**Tags in this server ({tag_count})**:\n{tags}")

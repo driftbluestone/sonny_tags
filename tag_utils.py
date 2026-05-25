@@ -67,9 +67,9 @@ async def create_tag(user_id: str, name: str, body: str, filepath: str) -> bool:
             file.write(body)
 
     user = users.get(user_id)
-    if name not in user["tags"]:
-        user["tags"].append(name)
-        users.set_field(user_id, "tags", user["tags"])
+    if name not in user["sonny_tags:tags"]:
+        user["sonny_tags:tags"].append(name)
+        users.set_field(user_id, "sonny_tags:tags", user["sonny_tags:tags"])
 
     return True
 

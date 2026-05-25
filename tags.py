@@ -45,20 +45,24 @@ async def admin_tag(ctx: commands.Context, tag: str, message: list):
     if (not tag) or (tag not in ADMIN_TAGS):
         return await ctx.reply(f":information_source: %t `{"|".join(DISPLAYED_ADMIN_TAGS)}`")
     if tag in ADMIN_TAGS and tag in SPECIAL_TAGS:
-        action =  getattr(functions, f"tag_{tag}")
+        action =  getattr(functions, tag)
         return await action(ctx, message, True)
-    action = getattr(admin_functions, f"admin_{tag}")
+    action = getattr(admin_functions, tag)
     return await action(ctx, message, True)
 
 async def execute_tag(ctx: commands.Context, tag: str, message: list = []):
-    """Executes tags while ignoring special tags"""
+    """
+    Executes tags while ignoring special tags
+    """
     user_id = str(ctx.author.id)
     data, filepath, exists, _ = await get_tag_data(user_id, tag)
     if not exists: return await ctx.reply(f":warning: Tag **{tag}** not found")
     return await parse_tag(ctx, data, filepath, message)
 
 async def parse_tag(ctx: commands.Context, data: dict, filepath: str, message: list = []):
-    """From tag data and filepath, will determine how to parse the tag"""
+    """
+    From tag data and filepath, will determine how to parse the tag
+    """
 
     # Set a recursion limit for code tag calling
     setattr(ctx, "recursion", getattr(ctx, "recursion", 0)+1)
@@ -81,15 +85,19 @@ async def parse_tag(ctx: commands.Context, data: dict, filepath: str, message: l
     return await ctx.reply(content=text, embed=embed)
 
 async def json_parser(ctx: commands.Context, input: str):
-    """Returns an embed, calls a tag, or returns plaintext. data is returned as discord.Embed, text"""
+    """
+    Returns an embed, calls a tag, or returns plaintext. data is returned as discord.Embed, text
+    """
     text = None
     try:
         json_input = json.loads(input)
         if not isinstance(json_input, dict):
             return None, input
         if "call_tag" in json_input:
-            if "args" in json_input: await execute_tag(ctx, json_input["call_tag"], json_input["args"])
-            else: await execute_tag(ctx, json_input["call_tag"])
+            if "args" in json_input:
+                await execute_tag(ctx, json_input["call_tag"], json_input["args"])
+            else:
+                await execute_tag(ctx, json_input["call_tag"])
             return None, None
         elif "embed" in json_input:
             embed = await embed_builder(ctx, input["embed"])
@@ -104,11 +112,14 @@ async def json_parser(ctx: commands.Context, input: str):
     return embed, text
 
 async def embed_builder(ctx: commands.Context, input: dict):
-    "Creates an embed from a dictionary input"
+    """
+    Creates an embed from a dictionary input
+    """
     embed = discord.Embed()
     for k, v in input.items():
         try:
-            if isinstance(v, dict): getattr(embed, k)(**v)
+            if isinstance(v, dict):
+                getattr(embed, k)(**v)
             else: setattr(embed, k, v) 
         except Exception as e:
             return str(e)
@@ -118,5 +129,6 @@ async def embed_builder(ctx: commands.Context, input: dict):
 async def execute_code_tag(ctx: commands.Context, tag: str, message: list):
     output = await container.container(ctx, tag, message)
     embed, text = await json_parser(ctx, output)
-    if embed is None and text is None: return
+    if embed is None and text is None:
+        return
     return await ctx.reply(content=text, embed=embed)

@@ -31,12 +31,12 @@ async def tag_alias(ctx: commands.Context, message: list):
     new_data, new_filepath, exists, _  = await tag_utils.get_tag_data(ctx, new_tag)
     if exists: return await ctx.reply(f":warning: Tag {new_tag} already exists and is owned by <@{new_data["owner"]}>")
 
-    new_data = {"name":new_tag,"type":"alias","alias_of":tag, "owner":str(ctx.author.id)}
+    new_data = {"name":new_tag, "type":"alias", "alias_of":tag, "owner":str(ctx.author.id)}
     with open(new_filepath, "w") as file:
         json.dump(new_data, file)
     
     user = users.get(ctx.author.id)
-    user["tags"].append(new_tag)
-    users.set_field(user["id"], "tags", user["tags"])
+    user["onny_tags:tags"].append(new_tag)
+    users.set_field(user["id"], "sonny_tags:tags", user["sonny_tags:tags"])
 
     return await ctx.reply(f":white_check_mark: Aliased **{new_tag}** to **{tag}**.")
