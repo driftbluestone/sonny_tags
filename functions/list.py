@@ -1,7 +1,7 @@
 """
 this function is cursed.
 """
-import os
+import os, discord, io
 from discord.ext import commands
 from ..strong_tag_data import *
 from api import users
@@ -25,8 +25,7 @@ async def tag_list(ctx: commands.Context, message: list):
     if not tag_list and not message:
         return await ctx.reply(f"No tags found.")
     if len(tags) >= 1900:
-        with open(f"{DIR}/data/extensions/sonny_tags/message.txt", "w") as file:
-            file.write(tags)
+        file = discord.File(fp=io.StringIO(tags), filename="message.txt")
         if message:
             return await ctx.reply(f"**<@{user["id"]}>'s tags ({tag_count})**:", file=file)
         else:
