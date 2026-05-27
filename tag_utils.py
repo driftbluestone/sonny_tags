@@ -27,7 +27,7 @@ async def check_creation_permission(ctx: commands.Context):
     if not ban:
         await ctx.reply(":warning: You are banned from creating tags.")
         return False
-    admin = users.has_permission(ctx.author.id, "sonny_tags:admin")
+    admin = await users.has_permission(ctx.author.id, "sonny_tags:admin")
     if tag_config["limit_creation_to_admins"] and (not admin):
         await ctx.reply(":information_source: Only admins can add tags")
         return False

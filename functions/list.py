@@ -12,8 +12,9 @@ DIR = Path(__file__).resolve().parent.parent.parent.parent
 async def tag_list(ctx: commands.Context, message: list):
     message = message[0]
     if message:
-        user = await users.get(message)
-        if not user: return await ctx.reply(":warning: Couldn't find user.")
+        user, _ = await users.resolve_user(message)
+        if not user:
+            return await ctx.reply(":warning: Couldn't find user.")
         tag_list = user["sonny_tags:tags"]
         tags = f"`{"`, `".join([x for x in tag_list])}`"
     else:
