@@ -17,7 +17,8 @@ async def tag_add(ctx: commands.Context, message: list):
 
     user_id = str(ctx.author.id)
     
-    message = message[1:]
+    message = f"{" ".join(message[1:])}\n{" ".join([attatchment.url for attatchment in ctx.message.attachments])}"
+    
     if tag in SPECIAL_TAGS or tag == "admin":
         return await ctx.reply(":warning: That tag is reserved.")
     data, _, exists, _ = await tag_utils.get_tag_data(user_id, tag)
@@ -25,7 +26,7 @@ async def tag_add(ctx: commands.Context, message: list):
         return await ctx.reply(f":warning: Tag {tag} already exists and is owned by <@{data["owner"]}>")
     if any(char not in VALID_NAME_CHARS for char in tag):
         return await ctx.reply(f":warning: Tag name must consist of characters a-z, 0-9, _, or -. ")
-    sucess = await tag_utils.create_tag(user_id, tag, " ".join(message), f"{DIR}/{tag}.json")
+    sucess = await tag_utils.create_tag(user_id, tag, message, f"{DIR}/{tag}.json")
     if not sucess:
         return await ctx.reply(f":warning: Tag body cannot be empty.")
     return await ctx.reply(f":white_check_mark: Created tag **{tag}**")

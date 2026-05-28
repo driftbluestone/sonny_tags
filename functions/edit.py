@@ -12,7 +12,7 @@ from .. import tag_utils
 async def edit(ctx: commands.Context, message: list, override: bool = False):
     if not await tag_utils.check_creation_permission(ctx): return
     tag: str = message[0].strip().lower()
-    message = message[1:]
+    message = message = f"{" ".join(message[1:])}\n{" ".join([attatchment.url for attatchment in ctx.message.attachments])}"
     if not tag: return await ctx.reply(":information_source: %t edit `name` `new body`")
 
     # Guiderails to prevent overwriting a tag you do not own.
@@ -32,6 +32,6 @@ async def edit(ctx: commands.Context, message: list, override: bool = False):
     if data["type"] == "plaintext":
         os.remove(f"{filepath[:-5]}.txt")
 
-    sucess = await tag_utils.create_tag(user_id, tag, " ".join(message), filepath)
+    sucess = await tag_utils.create_tag(user_id, tag, message, filepath)
     if not sucess: return await ctx.reply(f":warning: Tag body cannot be empty.")
     return await ctx.reply(f":white_check_mark: Edited tag **{tag}**")
