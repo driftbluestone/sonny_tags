@@ -37,7 +37,8 @@ async def create_tag(user_id: str, name: str, body: str, filepath: str) -> bool:
     """
     Creates a tag. Returns a bool based on success
     """
-    if body == "": return False
+    if not body:
+        return False
 
     # message tags
     if re.match(r"https:\/\/discord\.com\/channels\/\d+\/\d+\/\d+", body):
