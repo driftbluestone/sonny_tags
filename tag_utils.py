@@ -1,7 +1,5 @@
-import json, re, heapq
-from Levenshtein import ratio
+import json, re, heapq, os, Levenshtein
 from discord.ext import commands
-from os import listdir
 from api import users, config
 from pathlib import Path
 tag_config = config.get()
@@ -78,12 +76,12 @@ async def search(query: str, amount: int) -> str:
     """
     Searches for any matching tags
     """
-    tags = listdir(f"{DIR}/data/extensions/sonny_tags/tags")
+    tags = os.listdir(f"{DIR}/data/extensions/sonny_tags/tags")
     tags = [tag for tag in tags if tag.endswith(".json")]
     distances = {}
     for tag in tags:
         tag = tag[:-5]
-        distance = ratio(tag, query)
+        distance = Levenshtein.ratio(tag, query)
         distances[tag] = distance
     closest_match = heapq.nlargest(amount, distances.items(), key=lambda item: item[1])
     out = ""

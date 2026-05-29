@@ -1,8 +1,7 @@
 import discord, json
 from discord.ext import commands
 from api import users, gui
-from . import functions, admin_functions, container
-from .tag_utils import get_tag_data, search
+from . import functions, admin_functions, container, tag_utils
 from .strong_tag_data import *
 
 async def context_formatter(ctx: commands.Context):
@@ -31,9 +30,9 @@ async def get_tag(ctx: commands.Context, tag: str, message: list):
         return await admin_tag(ctx, message[0].lower(), message[1:])
     
     user_id = str(ctx.author.id)
-    data, filepath, exists, _ = await get_tag_data(user_id, tag)
+    data, filepath, exists, _ = await tag_utils.get_tag_data(user_id, tag)
     if not exists:
-        match = await search(tag, 1)
+        match = await tag_utils.search(tag, 1)
         return await ctx.reply(f":warning: Tag **{tag}** not found, did you mean {match}?")
     await parse_tag(ctx, data, filepath, message)
     
@@ -55,7 +54,7 @@ async def execute_tag(ctx: commands.Context, tag: str, message: list = []):
     Executes tags while ignoring special tags
     """
     user_id = str(ctx.author.id)
-    data, filepath, exists, _ = await get_tag_data(user_id, tag)
+    data, filepath, exists, _ = await tag_utils.get_tag_data(user_id, tag)
     if not exists: return await ctx.reply(f":warning: Tag **{tag}** not found")
     return await parse_tag(ctx, data, filepath, message)
 
