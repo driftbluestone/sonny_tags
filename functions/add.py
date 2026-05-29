@@ -1,6 +1,7 @@
 """
 Creates a tag while having safeguards to prevent overwriting
 """
+import random
 from discord.ext import commands
 from ..strong_tag_data import *
 from .. import tag_utils
@@ -14,6 +15,8 @@ async def tag_add(ctx: commands.Context, message: list):
     tag = message[0].lower().strip()
     if not tag:
         return await ctx.reply(":information_source: %t add `name` `body`")
+    if random.randint(1, 100) == 100:
+        return await ctx.reply("no")
 
     user_id = str(ctx.author.id)
     
