@@ -36,7 +36,7 @@ async def tag_alias(ctx: commands.Context, message: list):
         json.dump(new_data, file)
     
     user = users.get(ctx.author.id)
-    user["onny_tags:tags"].append(new_tag)
+    user["sonny_tags:tags"].append(new_tag)
     users.set_field(user["id"], "sonny_tags:tags", user["sonny_tags:tags"])
 
     return await ctx.reply(f":white_check_mark: Aliased **{new_tag}** to **{tag}**.")

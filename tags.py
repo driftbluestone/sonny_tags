@@ -100,7 +100,7 @@ async def json_parser(ctx: commands.Context, input: str):
                 await execute_tag(ctx, json_input["call_tag"])
             return None, None
         elif "embed" in json_input:
-            embed = await embed_builder(ctx, json_input["embed"])
+            embed = await embed_builder(ctx, input["embed"])
         else:
             return None, input
         if not isinstance(embed, discord.Embed):
