@@ -1,3 +1,5 @@
+import importlib
+importlib.reload()
 from discord.ext import commands
 from pathlib import Path
 from . import tags
