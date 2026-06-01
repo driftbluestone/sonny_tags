@@ -20,7 +20,7 @@ async def tag_add(ctx: commands.Context, message: list):
 
     user_id = str(ctx.author.id)
     
-    message = f"{" ".join(message[1:])}\n{" ".join([attatchment.url for attatchment in ctx.message.attachments])}"
+    message = f"{" ".join(message[1:])}\n{" ".join([attatchment.url for attatchment in ctx.message.attachments])}".strip()
     
     if tag in SPECIAL_TAGS or tag == "admin":
         return await ctx.reply(":warning: That tag is reserved.")

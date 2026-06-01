@@ -12,7 +12,7 @@ from .. import tag_utils
 async def edit(ctx: commands.Context, message: list, override: bool = False):
     if not await tag_utils.check_creation_permission(ctx): return
     tag: str = message[0].strip().lower()
-    message = message = f"{" ".join(message[1:])}\n{" ".join([attatchment.url for attatchment in ctx.message.attachments])}"
+    message = message = f"{" ".join(message[1:])}\n{" ".join([attatchment.url for attatchment in ctx.message.attachments])}".strip()
     if not tag: return await ctx.reply(":information_source: %t edit `name` `new body`")
 
     # Guiderails to prevent overwriting a tag you do not own.
