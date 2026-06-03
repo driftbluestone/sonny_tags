@@ -1,6 +1,6 @@
 """
-Deletes a tag\n
-Using override will make it ignore the owner\n
+Deletes a tag \n
+Using override will make it ignore the owner \n
 Using silent will stop it from sending a message
 """
 import os

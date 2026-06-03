@@ -1,0 +1,6 @@
+{
+    "py": ["py", "python"],
+    "js": ["js", "javascript"],
+    "java": ["java"],
+    "cpp": ["c++", "cpp", "cplusplus"]
+}

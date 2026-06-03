@@ -20,7 +20,7 @@ async def container(ctx: commands.Context, tag: str, message: list) -> str:
                '--cap-drop', 'ALL',
                '--network', 'none',
                '--rm', '-v', f'{DIR}/data/extensions/sonny_tags/tags:/data/:ro',
-               'python', 'python3', f'/data/{tag}.py',
+               'oven/bun', 'bun', f'/data/{tag}.py',
                args
             ]
     try:
