@@ -1,6 +1,12 @@
 {
-    "py": ["py", "python"],
-    "js": ["js", "javascript"],
-    "java": ["java"],
-    "cpp": ["c++", "cpp", "cplusplus"]
+    "py":"py",
+    "python":"py",
+    "javascript":"js",
+    "js":"js",
+    "java":"java",
+    "cpp":"cpp",
+    "c++":"cpp",
+    "cplusplus":"cpp",
+    "ts":"ts",
+    "typescript":"ts"
 }

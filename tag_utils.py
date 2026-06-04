@@ -5,6 +5,9 @@ from pathlib import Path
 tag_config = config.get()
 DIR = Path(__file__).resolve().parent.parent.parent
 
+with open(f"{DIR}/extensions/sonny_tags/code_tags/aliases.json", "r") as file:
+    languages: dict = json.load(file)
+
 async def get_tag_data(user_id: str, tag: str):
     """
     Returns tag metadeta, the filepath to the tag, if the tag exists or not, and if the user owns the tag, as a list
@@ -46,16 +49,13 @@ async def create_tag(user_id: str, name: str, body: str, filepath: str) -> bool:
 
     # code tags
     elif body.startswith("```") and body.endswith("```"):
-        body = body[3:-3]
-        if body.startswith("py"):
-            body = body[2:]
-        if body.startswith("thon"):
-            body = body[4:]
-        tag = {"name":name,"type":"code","aliases":[],"owner":user_id}
-        with open(filepath, "w") as file:
-            json.dump(tag, file)
-        with open(f"{filepath[:-5]}.py", "w", encoding="utf-8") as file:
-            file.write(body)
+        lang = get_lang(body, name, user_id, filepath)
+        if not lang:
+            tag = {"name":name,"type":"plaintext","aliases":[],"owner":user_id}
+            with open(filepath, "w") as file:
+                json.dump(tag, file)
+            with open(f"{filepath[:-5]}.txt", "w", encoding="utf-8") as file:
+                file.write(body)
 
     # plaintext tags
     else:
@@ -70,6 +70,20 @@ async def create_tag(user_id: str, name: str, body: str, filepath: str) -> bool:
         user["sonny_tags:tags"].append(name)
         users.set_field(user_id, "sonny_tags:tags", user["sonny_tags:tags"])
 
+    return True
+
+def get_lang(body, name, user_id, filepath):
+    body: str = body[3:-3]
+    lang = body.split("\n")[0]
+    if lang not in languages:
+        return False
+    extension = languages[lang]
+    body = body[len(lang):]
+    tag = {"name":name,"type":"code","aliases":[],"owner":user_id, "lang":extension}
+    with open(filepath, "w") as file:
+        json.dump(tag, file)
+    with open(f"{filepath[:-5]}.{extension}", "w", encoding="utf-8") as file:
+        file.write(body)
     return True
 
 async def search(query: str, amount: int) -> str:

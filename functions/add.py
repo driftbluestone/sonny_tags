@@ -27,6 +27,7 @@ async def tag_add(ctx: commands.Context, message: list):
     data, _, exists, _ = await tag_utils.get_tag_data(user_id, tag)
     if exists:
         return await ctx.reply(f":warning: Tag {tag} already exists and is owned by <@{data["owner"]}>")
+    tag = tag.split("\n")[0]
     if any(char not in VALID_NAME_CHARS for char in tag):
         return await ctx.reply(f":warning: Tag name must consist of characters a-z, 0-9, _, or -. ")
     sucess = await tag_utils.create_tag(user_id, tag, message, f"{DIR}/{tag}.json")

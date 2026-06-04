@@ -71,7 +71,7 @@ async def parse_tag(ctx: commands.Context, data: dict, filepath: str, message: l
     name = data["name"]
     tag = data["type"]
     if tag == "code":
-        return await execute_code_tag(ctx, name, message)
+        return await execute_code_tag(ctx, name, data["lang"], message)
     elif tag == "alias":
         return await execute_tag(ctx, data["alias_of"])
     elif tag == "message":
@@ -125,8 +125,8 @@ async def embed_builder(ctx: commands.Context, input: dict):
         
     return embed
 
-async def execute_code_tag(ctx: commands.Context, tag: str, message: list):
-    output = await container.container(ctx, tag, message)
+async def execute_code_tag(ctx: commands.Context, tag: str, lang: str, message: list):
+    output = await container.container(ctx, tag, lang, message)
     embed, text = await json_parser(ctx, output)
     if embed is None and text is None:
         return

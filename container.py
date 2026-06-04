@@ -4,7 +4,10 @@ from discord.ext import commands
 from pathlib import Path
 DIR = Path(__file__).resolve().parent.parent.parent
 
-async def container(ctx: commands.Context, tag: str, message: list) -> str:
+with open(f"{DIR}/extensions/sonny_tags/code_tags/args.json", "r") as file:
+    langargs: dict = json.load(file)
+
+async def container(ctx: commands.Context, tag: str, lang: str, message: list) -> str:
     """Creates a docker container that will execute a code tag"""
     container_name = uuid4().hex
 
@@ -20,7 +23,7 @@ async def container(ctx: commands.Context, tag: str, message: list) -> str:
                '--cap-drop', 'ALL',
                '--network', 'none',
                '--rm', '-v', f'{DIR}/data/extensions/sonny_tags/tags:/data/:ro',
-               'oven/bun', 'bun', f'/data/{tag}.py',
+               *langargs[lang], f'/data/{tag}.{lang}',
                args
             ]
     try:
@@ -54,7 +57,11 @@ async def create_args(ctx: commands.Context, message: list) -> dict:
     message_history = [message async for message in ctx.message.channel.history(limit=25)]
     for i in message_history:
         i: discord.Message
-        args["message_history"].append([str(i.id), i.content, str(i.author.id), i.author.name, i.author.global_name, i.author.nick, ctx.author.avatar.url])
+        args["message_history"].append([i.id, i.content, i.author.id, i.author.name, i.author.global_name, i.author.nick, ctx.author.avatar.url])
+    # Message reference, if any
+    if ctx.message.reference is not None:
+        reference: discord.Message = await ctx.channel.fetch_message(ctx.message.reference.message_id)
+        args["reference"] = [reference.id, reference.author.id, reference.author.name, reference.author.global_name, i.author.nick, i.author.avatar.url]
     # User supplied arguments
     args["args"] = message
     return args

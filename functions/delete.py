@@ -38,7 +38,7 @@ async def tag_delete(ctx: commands.Context, tag: list, override: bool = False, s
     
     # Remove other files from other tag types
     if data["type"] == "code":
-        os.remove(f"{filepath[:-5]}.py")
+        os.remove(f"{filepath[:-5]}.{data["lang"]}")
     if data["type"] == "plaintext":
         os.remove(f"{filepath[:-5]}.txt")
     os.remove(filepath)
