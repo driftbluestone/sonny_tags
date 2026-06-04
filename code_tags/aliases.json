@@ -8,5 +8,7 @@
     "c++":"cpp",
     "cplusplus":"cpp",
     "ts":"ts",
-    "typescript":"ts"
+    "typescript":"ts",
+    "rs":"rs",
+    "rust":"rs"
 }
