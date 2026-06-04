@@ -3,5 +3,6 @@
     "js": ["oven/bun", "bun"],
     "ts": ["oven/bun", "bun"],
     "java": ["sonny_java", "java"],
-    "rs": ["sonny_rust"]
+    "rs": ["sonny_rust"],
+    "cpp": ["sonny_cpp"]
 }
