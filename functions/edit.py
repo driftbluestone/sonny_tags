@@ -28,7 +28,7 @@ async def edit(ctx: commands.Context, message: list, override: bool = False):
 
     # Remove the other files in case of a type change
     if data["type"] == "code":
-        os.remove(f"{filepath[:-5]}.py")
+        os.remove(f"{filepath[:-5]}.{data["lang"]}")
     if data["type"] == "plaintext":
         os.remove(f"{filepath[:-5]}.txt")
 
