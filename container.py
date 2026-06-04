@@ -19,7 +19,7 @@ async def container(ctx: commands.Context, tag: str, lang: str, message: list) -
                '--memory', '512m',
                '--memory-swap', '512m',
                '--user', '1000:1000',
-               '--pids-limit', '20',
+               '--pids-limit', '50',
                '--cap-drop', 'ALL',
                '--network', 'none',
                '--rm', '-v', f'{DIR}/data/extensions/sonny_tags/tags:/data/:ro',
