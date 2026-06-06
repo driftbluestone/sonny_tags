@@ -91,8 +91,8 @@ async def create_args(ctx: commands.Context, message: list, extended_args: list)
                 additional_args = str(e)
             
             
-
-        args["args"][i] = additional_args
+        if i < len(args["args"]):
+            args["args"][i] = additional_args
     return args
 
     # <@&1512724635853127800> role
