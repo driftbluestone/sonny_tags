@@ -66,10 +66,9 @@ async def create_args(ctx: commands.Context, message: list, extended_args: list)
     # User supplied arguments
     args["args"] = message
     for i, arg in enumerate(extended_args):
-        if i < len(args["args"]):
+        if i >= len(args["args"]):
                 continue
         if arg == "user":
-            
             _, user = await users.resolve_user(args["args"][i])
             if user is False:
                 additional_args = None
@@ -92,7 +91,6 @@ async def create_args(ctx: commands.Context, message: list, extended_args: list)
                 additional_args = [role.id, role.name, role._colour, role._secondary_colour, role._tertiary_colour, None if role.icon is None else role.icon.url, role.unicode_emoji]
             except commands.BadArgument as e:
                 additional_args = str(e)
-            
             
         args["args"][i] = additional_args
     return args
