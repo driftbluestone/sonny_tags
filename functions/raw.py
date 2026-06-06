@@ -13,15 +13,17 @@ async def tag_raw(ctx: commands.Context, message: list):
     if tag == "": return await ctx.reply(":information_source: %t raw `tag`")
     if tag in SPECIAL_TAGS or tag == "admin":
         if tag == "raw":
-            return await ctx.reply(f"why dont you raw some bitches")
-        if tag == "search":
-            return await ctx.reply(f"why dont you search for some bitches")
+            return await ctx.reply("why dont you raw some bitches")
+        elif tag == "search":
+            return await ctx.reply("why dont you search for some bitches")
+        elif tag == "owner":
+            return await ctx.reply("why dont you own some bitches")
         return await ctx.reply(f"{tag} is a special tag.")
     data, filepath, exists, _ = await tag_utils.get_tag_data(ctx, tag)
     if not exists: return await ctx.reply(f":warning: Tag **{tag}** does not exist.")
     file = [discord.File(filepath)]
     if data["type"] == "code":
-        file.append(discord.File(f"{filepath[:-5]}.py"))
+        file.append(discord.File(f"{filepath[:-5]}.{data["lang"]}"))
     if data["type"] == "plaintext":
         file.append(discord.File(f"{filepath[:-5]}.txt"))
     return await ctx.reply(f":information_source: Raw data for **{tag}**.", files=file)
