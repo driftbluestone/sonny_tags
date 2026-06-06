@@ -74,12 +74,20 @@ async def create_tag(user_id: str, name: str, body: str, filepath: str) -> bool:
 
 def get_lang(body, name, user_id, filepath):
     body: str = body[3:-3]
-    lang = body.split("\n")[0]
+    lines = body.split("\n")
+    lang = lines[0]
+
+    args = lines[1].split(" ")[1:]
+    cleaned_args = []
+    for arg in args:
+        if arg in ["user", "channel", "role"]:
+            cleaned_args.append(arg) 
+
     if lang not in languages:
         return False
     extension = languages[lang]
     body = body[len(lang):]
-    tag = {"name":name,"type":"code","aliases":[],"owner":user_id, "lang":extension}
+    tag = {"name": name,"type": "code", "aliases": [], "owner": user_id, "lang": extension, "args": cleaned_args}
     with open(filepath, "w") as file:
         json.dump(tag, file)
     with open(f"{filepath[:-5]}.{extension}", "w", encoding="utf-8") as file:

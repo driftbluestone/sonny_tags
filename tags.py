@@ -55,7 +55,8 @@ async def execute_tag(ctx: commands.Context, tag: str, message: list = []):
     """
     user_id = str(ctx.author.id)
     data, filepath, exists, _ = await tag_utils.get_tag_data(user_id, tag)
-    if not exists: return await ctx.reply(f":warning: Tag **{tag}** not found")
+    if not exists:
+        return await ctx.reply(f":warning: Tag **{tag}** not found")
     return await parse_tag(ctx, data, filepath, message)
 
 async def parse_tag(ctx: commands.Context, data: dict, filepath: str, message: list = []):
@@ -71,7 +72,7 @@ async def parse_tag(ctx: commands.Context, data: dict, filepath: str, message: l
     name = data["name"]
     tag = data["type"]
     if tag == "code":
-        return await execute_code_tag(ctx, name, data["lang"], message)
+        return await execute_code_tag(ctx, name, data, message)
     elif tag == "alias":
         return await execute_tag(ctx, data["alias_of"])
     elif tag == "message":
@@ -125,8 +126,8 @@ async def embed_builder(ctx: commands.Context, input: dict):
         
     return embed
 
-async def execute_code_tag(ctx: commands.Context, tag: str, lang: str, message: list):
-    output = await container.container(ctx, tag, lang, message)
+async def execute_code_tag(ctx: commands.Context, tag: str, data: str, message: list):
+    output = await container.container(ctx, tag, data, message)
     embed, text = await json_parser(ctx, output)
     if embed is None and text is None:
         return

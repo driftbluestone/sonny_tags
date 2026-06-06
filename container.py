@@ -1,18 +1,19 @@
 import discord, json, asyncio
 from uuid import uuid4
 from discord.ext import commands
+from api import users
 from pathlib import Path
 DIR = Path(__file__).resolve().parent.parent.parent
 
 with open(f"{DIR}/extensions/sonny_tags/code_tags/args.json", "r") as file:
     langargs: dict = json.load(file)
 
-async def container(ctx: commands.Context, tag: str, lang: str, message: list) -> str:
+async def container(ctx: commands.Context, tag: str, data: dict, message: list) -> str:
     """Creates a docker container that will execute a code tag"""
     container_name = uuid4().hex
 
     # Create the args that are passed into the container
-    args = await create_args(ctx, message)
+    args = await create_args(ctx, message, data["args"] if "args" in data else [])
     args = json.dumps(args)
     docargs = ['docker', 'run',
                '--name', container_name,
@@ -23,7 +24,7 @@ async def container(ctx: commands.Context, tag: str, lang: str, message: list) -
                '--cap-drop', 'ALL',
                '--network', 'none',
                '--rm', '-v', f'{DIR}/data/extensions/sonny_tags/tags:/data/:ro',
-               *langargs[lang], f'/data/{tag}.{lang}',
+               *langargs[data["lang"]], f'/data/{tag}.{data["lang"]}',  
                args
             ]
     try:
@@ -47,7 +48,7 @@ async def container(ctx: commands.Context, tag: str, lang: str, message: list) -
         output = str(e)
     return output
 
-async def create_args(ctx: commands.Context, message: list) -> dict:
+async def create_args(ctx: commands.Context, message: list, extended_args: list) -> dict:
     args = {}
     args["user"] = [ctx.author.id, ctx.author.name, ctx.author.global_name, ctx.author.nick, ctx.author.display_avatar.url]
     args["server"] = [ctx.guild.id, ctx.guild.name]
@@ -64,4 +65,35 @@ async def create_args(ctx: commands.Context, message: list) -> dict:
         args["reference"] = [reference.id, reference.author.id, reference.author.name, reference.author.global_name, i.author.nick, i.author.avatar.url]
     # User supplied arguments
     args["args"] = message
+    for i, arg in enumerate(extended_args):
+        if arg == "user":
+            _, user = await users.resolve_user(args["args"][i])
+            if user is False:
+                additional_args = None
+            else:
+                additional_args = [user.id, user.name, user.global_name, user.nick, user.display_avatar.url]
+        elif arg == "channel":
+            try:
+                channel: discord.TextChannel = await commands.TextChannelConverter().convert(ctx, args["args"][i])
+                additional_args = [channel.id, channel.name, channel.category.id, channel.category.name]
+            except commands.BadArgument:
+                try:
+                    channel: discord.VoiceChannel = await commands.VoiceChannelConverter().convert(ctx, args["args"][i])
+                    additional_args = [channel.id, channel.name, channel.category.id, channel.category.name]
+                except commands.BadArgument as e:
+                    additional_args = str(e)
+            
+        elif arg == "role":
+            try:
+                role: discord.Role = await commands.RoleConverter().convert(ctx, args["args"][i])
+                additional_args = [role.id, role.name, role._colour, role._secondary_colour, role._tertiary_colour, None if role.icon is None else role.icon.url, role.unicode_emoji]
+            except commands.BadArgument as e:
+                additional_args = str(e)
+            
+            
+
+        args["args"][i] = additional_args
     return args
+
+    # <@&1512724635853127800> role
+    # <#1440196612361162804> channel
