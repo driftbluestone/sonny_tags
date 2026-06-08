@@ -49,16 +49,6 @@ async def admin_tag(ctx: commands.Context, tag: str, message: list):
     action = getattr(admin_functions, tag)
     return await action(ctx, message, True)
 
-async def execute_tag(ctx: commands.Context, tag: str, message: list = []):
-    """
-    Executes tags while ignoring special tags
-    """
-    user_id = str(ctx.author.id)
-    data, filepath, exists, _ = await tag_utils.get_tag_data(user_id, tag)
-    if not exists:
-        return await ctx.reply(f":warning: Tag **{tag}** not found")
-    return await parse_tag(ctx, data, filepath, message)
-
 async def parse_tag(ctx: commands.Context, data: dict, filepath: str, message: list = []):
     """
     From tag data and filepath, will determine how to parse the tag
@@ -74,7 +64,7 @@ async def parse_tag(ctx: commands.Context, data: dict, filepath: str, message: l
     if tag == "code":
         return await execute_code_tag(ctx, name, data, message)
     elif tag == "alias":
-        return await execute_tag(ctx, data["alias_of"])
+        return await get_tag(ctx, data["alias_of"], message)
     elif tag == "message":
         embed = await gui.create_message_embed(data["message_link"])
         return await ctx.reply(embed=embed)
@@ -95,9 +85,9 @@ async def json_parser(ctx: commands.Context, input: str):
             return None, input
         if "call_tag" in json_input:
             if "args" in json_input:
-                await execute_tag(ctx, json_input["call_tag"], json_input["args"])
+                await get_tag(ctx, json_input["call_tag"], json_input["args"])
             else:
-                await execute_tag(ctx, json_input["call_tag"])
+                await get_tag(ctx, json_input["call_tag"])
             return None, None
         elif "embed" in json_input:
             embed = await embed_builder(ctx, json_input["embed"])
