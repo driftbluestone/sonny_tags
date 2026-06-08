@@ -4,9 +4,9 @@ from pathlib import Path
 DIR = Path(__file__).resolve().parent
 DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data/extensions/sonny_tags/tags"
 
-permission.create("view", "View Tags", None, True, True, True)
-permission.create("create", "Create Tags", None, True, True, True)
-permission.create("admin", "Tag Admin", "administrator", True, False, True)
+permission.create("view", "View Tags", True, True, True)
+permission.create("create", "Create Tags", True, True, True)
+permission.create("admin", "Tag Admin", True, False, True)
 users.new_data_field("tags", list)
 config.create_field("limit_creation_to_admins", False)
 if not os.path.exists(DATA_DIR):
