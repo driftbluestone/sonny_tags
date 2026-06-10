@@ -84,10 +84,7 @@ async def json_parser(ctx: commands.Context, input: str):
         if not isinstance(json_input, dict):
             return None, input
         if "call_tag" in json_input:
-            if "args" in json_input:
-                await get_tag(ctx, json_input["call_tag"], json_input["args"])
-            else:
-                await get_tag(ctx, json_input["call_tag"])
+            await get_tag(ctx, json_input["call_tag"], json_input["args"] if "args" in json_input else [])
             return None, None
         elif "embed" in json_input:
             embed = await embed_builder(ctx, json_input["embed"])
