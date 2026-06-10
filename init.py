@@ -1,6 +1,7 @@
 import os, subprocess
 from api import config, permission, users
-from utils import logger
+from utils.logger import Logger
+logger = Logger()
 from pathlib import Path
 DIR = Path(__file__).resolve().parent
 DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data/extensions/sonny_tags/tags"
@@ -22,7 +23,7 @@ for dockerfile in os.listdir(f"{DIR}/docker"):
         text=True
     )
     if bool(result.stdout.strip()):
-        logger.log_sync(f"Skipped building {file}, as it already exists")
+        logger.logger.log(10, f"Skipped building {file}, as it already exists")
         continue
     result = subprocess.run(
         ["docker", "build", "-f", f"{DIR}/docker/{dockerfile}", "-t", file, "."],
@@ -30,4 +31,4 @@ for dockerfile in os.listdir(f"{DIR}/docker"):
         stderr=subprocess.STDOUT,
         text=True
     )
-    logger.log_sync(result.stdout)
+    logger.logger.log(10, result.stdout)
