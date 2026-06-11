@@ -82,14 +82,14 @@ async def json_parser(ctx: commands.Context, input: str):
     try:
         json_input = json.loads(input)
         if not isinstance(json_input, dict):
-            return None, input
+            return None, input[:1995]
         if "call_tag" in json_input:
             await get_tag(ctx, json_input["call_tag"], json_input["args"] if "args" in json_input else [])
             return None, None
         elif "embed" in json_input:
             embed = await embed_builder(ctx, json_input["embed"])
         else:
-            return None, input
+            return None, input[:1995]
         if not isinstance(embed, discord.Embed):
             embed = discord.Embed(description=f"Error creating embed:\n{embed}")
 
