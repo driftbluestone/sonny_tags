@@ -22,7 +22,7 @@ async def tag_alias(ctx: commands.Context, message: list):
     print(message)
     user_id = str(ctx.author.id)
     data, filepath, exists, _ = await tag_utils.get_tag_data(user_id, tag)
-    if (not exists) or (tag not in SPECIAL_TAGS) or (tag != "admin"):
+    if (not exists) and (tag not in SPECIAL_TAGS) and (tag != "admin"):
         return await ctx.reply(f":warning: Tag **{tag}** does not exist.")
     # If the tag is an alias, alias the new tag to the tag it's an alias of, as alias tags do not support being aliased
     if data["type"] == "alias":
