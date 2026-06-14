@@ -4,6 +4,7 @@ Creates an alias of another tag
 from discord.ext import commands
 # from utils.users import get_user_profile, save_user_profile
 from api import users
+from utils import jsonIO
 from ..strong_tag_data import *
 from .. import tag_utils
 
@@ -27,16 +28,14 @@ async def tag_alias(ctx: commands.Context, message: list):
     if data["type"] == "alias":
         return await tag_alias(ctx, new_tag, data["alias_of"])
 
-    with open(filepath, "w") as file:
-        data["aliases"].append(new_tag)
-        json.dump(data, file)
+    data["aliases"].append(new_tag)
+    jsonIO.dump(filepath, data)
     new_data, new_filepath, exists, _  = await tag_utils.get_tag_data(ctx, new_tag)
     if exists:
         return await ctx.reply(f":warning: Tag {new_tag} already exists and is owned by <@{new_data["owner"]}>")
 
     new_data = {"name":new_tag, "type":"alias", "alias_of":tag, "owner":str(ctx.author.id)}
-    with open(new_filepath, "w") as file:
-        json.dump(new_data, file)
+    jsonIO.dump(new_filepath, new_data)
     
     user = users.get(ctx.author.id)
     user["sonny_tags:tags"].append(new_tag)

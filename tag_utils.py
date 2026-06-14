@@ -1,12 +1,12 @@
-import json, re, heapq, os, Levenshtein
+import re, heapq, os, Levenshtein
 from discord.ext import commands
 from api import users, config
 from pathlib import Path
+from utils import jsonIO
+from utils.utils import DIR
 tag_config = config.get()
-DIR = Path(__file__).resolve().parent.parent.parent
 
-with open(f"{DIR}/extensions/sonny_tags/code_tags/aliases.json", "r") as file:
-    languages: dict = json.load(file)
+languages = jsonIO.load(f"{DIR}/extensions/sonny_tags/code_tags/aliases.json")
 
 async def get_tag_data(user_id: str, tag: str):
     """
@@ -16,8 +16,7 @@ async def get_tag_data(user_id: str, tag: str):
     if not Path(filepath).exists():
         return [None, filepath, False, False]
 
-    with open(filepath, "r") as file:
-        data = json.load(file)
+    data = jsonIO.load(filepath)
     if data["owner"] == user_id:
         owned = True
     else: owned = False
@@ -44,24 +43,21 @@ async def create_tag(user_id: str, name: str, body: str, filepath: str) -> bool:
     # message tags
     if re.match(r"https:\/\/discord\.com\/channels\/\d+\/\d+\/\d+", body):
         tag = {"name":name,"type":"message","aliases":[],"message_link":body, "owner":user_id}
-        with open(filepath, "w") as file:
-            json.dump(tag, file)
+        jsonIO.dump(filepath)
 
     # code tags
     elif body.startswith("```") and body.endswith("```"):
         lang = get_lang(body, name, user_id, filepath)
         if not lang:
             tag = {"name":name,"type":"plaintext","aliases":[],"owner":user_id}
-            with open(filepath, "w") as file:
-                json.dump(tag, file)
+            jsonIO.dump(filepath, tag)
             with open(f"{filepath[:-5]}.txt", "w", encoding="utf-8") as file:
                 file.write(body)
 
     # plaintext tags
     else:
         tag = {"name":name,"type":"plaintext","aliases":[],"owner":user_id}
-        with open(filepath, "w") as file:
-            json.dump(tag, file)
+        jsonIO.dump(filepath, tag)
         with open(f"{filepath[:-5]}.txt", "w", encoding="utf-8") as file:
             file.write(body)
 
@@ -88,8 +84,7 @@ def get_lang(body, name, user_id, filepath):
     extension = languages[lang]
     body = body[len(lang):]
     tag = {"name": name,"type": "code", "aliases": [], "owner": user_id, "lang": extension, "args": cleaned_args}
-    with open(filepath, "w") as file:
-        json.dump(tag, file)
+    jsonIO.dump(filepath, tag)
     with open(f"{filepath[:-5]}.{extension}", "w", encoding="utf-8") as file:
         file.write(body)
     return True

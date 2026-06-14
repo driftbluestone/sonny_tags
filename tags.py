@@ -1,6 +1,7 @@
-import discord, json
+import discord, orjson
 from discord.ext import commands
 from api import users, gui
+from utils import jsonIO
 from . import functions, admin_functions, container, tag_utils
 from .strong_tag_data import *
 
@@ -80,7 +81,7 @@ async def json_parser(ctx: commands.Context, input: str):
     """
     text = None
     try:
-        json_input = json.loads(input)
+        json_input = jsonIO.loads(input)
         if not isinstance(json_input, dict):
             return None, input[:1995]
         if "call_tag" in json_input:
@@ -93,7 +94,7 @@ async def json_parser(ctx: commands.Context, input: str):
         if not isinstance(embed, discord.Embed):
             embed = discord.Embed(description=f"Error creating embed:\n{embed}")
 
-    except json.JSONDecodeError:
+    except orjson.JSONDecodeError:
         embed = None
         text = input[:1995]
     return embed, text

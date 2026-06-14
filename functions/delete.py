@@ -6,6 +6,7 @@ Using silent will stop it from sending a message
 import os
 from discord.ext import commands
 from api import users
+from utils import jsonIO
 from ..strong_tag_data import *
 from .. import tag_utils
 
@@ -33,8 +34,7 @@ async def tag_delete(ctx: commands.Context, tag: list, override: bool = False, s
     else:
         alias_of, alias_filepath, _, _ = await tag_utils.get_tag_data(ctx, data["alias_of"])
         alias_of["aliases"].remove(tag)
-        with open(alias_filepath, "w") as file:
-            json.dump(alias_of, file)
+        jsonIO.dump(alias_filepath, alias_of)
     
     # Remove other files from other tag types
     if data["type"] == "code":

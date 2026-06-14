@@ -31,4 +31,4 @@ for dockerfile in os.listdir(f"{DIR}/docker"):
         stderr=subprocess.STDOUT,
         text=True
     )
-    logger.logger.log(10, result.stdout)
+    logger._logger.log(10, result.stdout)

@@ -1,12 +1,11 @@
-import discord, json, asyncio
+import discord, asyncio
 from uuid import uuid4
 from discord.ext import commands
 from api import users
-from pathlib import Path
-DIR = Path(__file__).resolve().parent.parent.parent
+from utils import jsonIO
+from utils.utils import DIR
 
-with open(f"{DIR}/extensions/sonny_tags/code_tags/args.json", "r") as file:
-    langargs: dict = json.load(file)
+langargs: dict = jsonIO.load(f"{DIR}/extensions/sonny_tags/code_tags/args.json")
 
 async def container(ctx: commands.Context, tag: str, data: dict, message: list) -> str:
     """Creates a docker container that will execute a code tag"""
@@ -14,7 +13,7 @@ async def container(ctx: commands.Context, tag: str, data: dict, message: list) 
 
     # Create the args that are passed into the container
     args = await create_args(ctx, message, data["args"] if "args" in data else [])
-    args = json.dumps(args)
+    args = jsonIO.dumps(args)
     docargs = ['docker', 'run',
                '--name', container_name,
                '--memory', '512m',
