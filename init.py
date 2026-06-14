@@ -23,7 +23,7 @@ for dockerfile in os.listdir(f"{DIR}/docker"):
         text=True
     )
     if bool(result.stdout.strip()):
-        logger.logger.log(10, f"Skipped building {file}, as it already exists")
+        logger._logger.log(10, f"Skipped building {file}, as it already exists")
         continue
     result = subprocess.run(
         ["docker", "build", "-f", f"{DIR}/docker/{dockerfile}", "-t", file, "."],
