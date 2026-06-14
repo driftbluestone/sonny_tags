@@ -43,7 +43,7 @@ async def create_tag(user_id: str, name: str, body: str, filepath: str) -> bool:
     # message tags
     if re.match(r"https:\/\/discord\.com\/channels\/\d+\/\d+\/\d+", body):
         tag = {"name":name,"type":"message","aliases":[],"message_link":body, "owner":user_id}
-        jsonIO.dump(filepath)
+        jsonIO.dump(filepath, tag)
 
     # code tags
     elif body.startswith("```") and body.endswith("```"):
