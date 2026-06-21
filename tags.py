@@ -119,4 +119,6 @@ async def execute_code_tag(ctx: commands.Context, tag: str, data: str, message: 
     embed, text = await json_parser(ctx, output)
     if embed is None and text is None:
         return
+    if text == "":
+        text = "[No output]"
     return await ctx.reply(content=text, embed=embed)
