@@ -1,6 +1,6 @@
-from discord.ext import commands
 from pathlib import Path
 from . import tags
+from api import commands
 DIR = Path(__file__).parent.absolute()
 
 async def setup(bot: commands.Bot) -> None:
@@ -20,3 +20,4 @@ class Tags(commands.Cog):
                               commands.InvalidEndOfQuotedStringError,
                               commands.UnexpectedQuoteError)):
             return await tags.context_formatter(ctx)
+

@@ -7,12 +7,12 @@ from utils.utils import DIR
 
 langargs: dict = jsonIO.load(f"{DIR}/extensions/sonny_tags/code_tags/args.json")
 
-async def container(ctx: commands.Context, tag: str, data: dict, message: list) -> str:
+async def container(ctx: commands.Context, data: tuple, message: list) -> str:
     """Creates a docker container that will execute a code tag"""
     container_name = uuid4().hex
 
     # Create the args that are passed into the container
-    args = await create_args(ctx, message, data["args"] if "args" in data else [])
+    args = await create_args(ctx, message, data[5] if data[5] is not None else [])
     args = jsonIO.dumps(args)
     docargs = ['docker', 'run',
                '--name', container_name,
@@ -22,8 +22,8 @@ async def container(ctx: commands.Context, tag: str, data: dict, message: list) 
                '--pids-limit', '50',
                '--cap-drop', 'ALL',
                '--network', 'none',
-               '--rm', '-v', f'{DIR}/data/extensions/sonny_tags/tags:/data/:ro',
-               *langargs[data["lang"]], f'/data/{tag}.{data["lang"]}',  
+               '--rm', '-i', 
+               *langargs[data[1].split(":")[1]],  
                args
             ]
     try:
@@ -32,7 +32,7 @@ async def container(ctx: commands.Context, tag: str, data: dict, message: list) 
             stdout=asyncio.subprocess.PIPE  , 
             stderr=asyncio.subprocess.STDOUT,
         )
-        stdout, _ = await asyncio.wait_for(result.communicate(), timeout=5.0)
+        stdout, _ = await asyncio.wait_for(result.communicate(input=data[3].encode("utf-8")), timeout=5.0)
         output = stdout.decode()
     except asyncio.TimeoutError as e:
         # Force kill the container
@@ -68,7 +68,7 @@ async def create_args(ctx: commands.Context, message: list, extended_args: list)
         if i >= len(args["args"]):
                 continue
         if arg == "user":
-            _, user = await users.resolve_user(args["args"][i])
+            user, _ = await users.resolve_user(ctx.guild.id, args["args"][i])
             if user is False:
                 additional_args = None
             else:

@@ -3,10 +3,9 @@ Deletes a tag \n
 Using override will make it ignore the owner \n
 Using silent will stop it from sending a message
 """
-import os
 from discord.ext import commands
-from api import users
-from utils import jsonIO
+from psycopg import sql
+from api import db
 from ..strong_tag_data import *
 from .. import tag_utils
 
@@ -16,37 +15,40 @@ async def tag_delete(ctx: commands.Context, tag: list, override: bool = False, s
     if not tag:
         return await ctx.reply(":information_source: %t delete `tag`")
 
-    user_id = str(ctx.author.id)
-    data, filepath, exists, owned = await tag_utils.get_tag_data(user_id, tag)
-    if not exists:
+    data = tag_utils.get_tag_data(tag)
+    if data is None:
         return await ctx.reply(f":warning: Tag **{tag}** does not exist.")
-    if not (owned or override):
-        return await ctx.reply(f":warning: Tag **{tag}** is owned by <@{data["owner"]}>")
+    tag, owner, type, _, aliases, _ = data
+    if not (override or ctx.author.id == owner):
+        return await ctx.reply(f":warning: Tag **{tag}** is owned by <@{owner}>")
 
-    # If the tag is not an alias itself, remove all aliases it has
+    # If the tag is not an alias, remove all aliases it has
     deleted_aliases = ""
-    if data["type"] != "alias":
-        aliases = data["aliases"]
+    if type != "alias":
+        deleted_aliases = " and surrounding aliases"
         for alias in aliases:
-            deleted_aliases = " and surrounding aliases"
             await tag_delete(ctx, alias, True, True)
     # If the tag is an alias, remove it from the parent tag
     else:
-        alias_of, alias_filepath, _, _ = await tag_utils.get_tag_data(ctx, data["alias_of"])
-        alias_of["aliases"].remove(tag)
-        jsonIO.dump(alias_filepath, alias_of)
+        query = sql.SQL("UPDATE {schema}.sonny_tags$tags SET aliases = array_remove(aliases, '{tag}')").format(
+            schema = db.SCHEMA, tag = sql.Placeholder())
+        db.run(query, tag)
     
-    # Remove other files from other tag types
-    if data["type"] == "code":
-        os.remove(f"{filepath[:-5]}.{data["lang"]}")
-    if data["type"] == "plaintext":
-        os.remove(f"{filepath[:-5]}.txt")
-    os.remove(filepath)
+    # Remove tag from user profiles
+    size = tag_utils.tag_size(tag)
+    query = sql.SQL("""UPDATE {schema}.sonny_tags$users
+    SET tags = array_remove(tags, '{tag}'),
+    space = space - {size}
+    WHERE user = {user_id};""").format(
+        schema = db.SCHEMA,
+        tag = sql.Placeholder(),
+        size = sql.Placeholder(),
+        user_id = sql.Placeholder()
+    )
+    db.run(query, (tag, size, owner))
 
-    # Save the data
-    user = users.get(int(data["owner"]))
-    user["sonny_tags:tags"].remove(tag)
-    users.set_field(user["id"], "sonny_tags:tags", user["sonny_tags:tags"])
+    # Remove tag from database
+    db.delete("sonny_tags$tags", ("name",), (tag,))
 
     if not silent:
         return await ctx.reply(f":white_check_mark: Tag **{tag}**{deleted_aliases} deleted.")

@@ -1,7 +1,3 @@
-"""
-Returns the files for a tag
-"""
-import discord, io
 from discord.ext import commands
 from ..strong_tag_data import *
 from .. import tag_utils
@@ -23,14 +19,4 @@ async def tag_raw(ctx: commands.Context, message: list):
     if data is None:
         return await ctx.reply(f":warning: Tag **{tag}** does not exist.")
 
-    if data[2] == "message":
-        return await ctx.reply(f":information_source: Tag **{tag}** is a message tag for message {data[3]}")
-    elif data[2] == "alias":
-        return await ctx.reply(f":information_source: Tag **{tag}** is an alias of {data[3]}")
-    elif data[2] == "plaintext":
-        file = discord.File(fp=io.StringIO(data[3]), name=f"{tag}.txt")
-        return await ctx.reply(f":information_source: Raw data for **{tag}**", file=file)
-    elif data[2].startswith("code:"):
-        extension = data[2][5:]
-        file = discord.File(fp=io.StringIO(data[3]), name=f"{tag}.{extension}")
-        return await ctx.reply(f":information_source: Raw data for **{tag}**", file=file)
+    return await ctx.reply(f":information_source: Metadata for tag {tag}:\nname: {data[0]}\nowner: <@{data[1]}>\ntype: {data[2]}\naliases: {data[4]}\nargs (code tags only): {data[5]}")

@@ -8,7 +8,6 @@ from ..strong_tag_data import *
 
 @CallableModule
 async def admin_limit(ctx: commands.Context, _):
-    
     msg = ":white_check_mark: "
     if tag_utils.tag_config["limit_creation_to_admins"]:
         msg += "Only admins"

@@ -1,107 +1,117 @@
-import re, heapq, os, Levenshtein
+import re
 from discord.ext import commands
-from api import users, config
 from pathlib import Path
+from psycopg import sql
+from api import users, config, db
 from utils import jsonIO
 from utils.utils import DIR
 tag_config = config.get()
 
 languages = jsonIO.load(f"{DIR}/extensions/sonny_tags/code_tags/aliases.json")
 
-async def get_tag_data(user_id: str, tag: str):
+def get_tag_data(tag: str) -> tuple[str, int, str, str, list | None, list | None] | None:
     """
-    Returns tag metadeta, the filepath to the tag, if the tag exists or not, and if the user owns the tag, as a list
+    Returns ALL tag data or None if tag does not exist.
+    
+    Name, Owner, Type, Content, Aliases, Args (code tags only).
     """
-    filepath = f"{DIR}/data/extensions/sonny_tags/tags/{tag}.json"
-    if not Path(filepath).exists():
-        return [None, filepath, False, False]
+    return db.get("sonny_tags$tags", (tag,), ("name",))
 
-    data = jsonIO.load(filepath)
-    if data["owner"] == user_id:
-        owned = True
-    else: owned = False
-    return [data, filepath, True, owned]
+def get_tag_owner(tag: str) -> int | None:
+    """Returns tag owner or None if the tag does not exist."""
+    data, = db.get("sonny_tags$tags", (tag,), ("name",), ("owner",))
+    return data
+
+def get_tag_type(tag: str) -> str | None:
+    """Returns tag type or None if the tag does not exist."""
+    data, = db.get("sonny_tags$tags", (tag,), ("name",), ("type",))
+    return data
 
 async def check_creation_permission(ctx: commands.Context):
-    ban = await users.has_permission(ctx.author.id, "sonny_tags:create")
+    ban = await users.has_permission(ctx.guild.id, ctx.author.id, "sonny_tags:create")
     if not ban:
         await ctx.reply(":warning: You are banned from creating tags.")
         return False
-    admin = await users.has_permission(ctx.author.id, "sonny_tags:admin")
+    
+    admin = await users.has_permission(ctx.guild.id, ctx.author.id, "sonny_tags:admin")
     if tag_config["limit_creation_to_admins"] and (not admin):
         await ctx.reply(":information_source: Only admins can add tags")
         return False
+    
     return True
 
-async def create_tag(user_id: str, name: str, body: str, filepath: str) -> bool:
-    """
-    Creates a tag. Returns a bool based on success
-    """
-    if not body:
-        return False
+async def create_tag(user_id: int, name: str, body: str):
+    """Creates a tag."""
 
-    # message tags
+    # get type
     if re.match(r"https:\/\/discord\.com\/channels\/\d+\/\d+\/\d+", body):
-        tag = {"name":name,"type":"message","aliases":[],"message_link":body, "owner":user_id}
-        jsonIO.dump(filepath, tag)
-
-    # code tags
+        tag_type = "message"
     elif body.startswith("```") and body.endswith("```"):
-        lang = get_lang(body, name, user_id, filepath)
-        if not lang:
-            tag = {"name":name,"type":"plaintext","aliases":[],"owner":user_id}
-            jsonIO.dump(filepath, tag)
-            with open(f"{filepath[:-5]}.txt", "w", encoding="utf-8") as file:
-                file.write(body)
-
-    # plaintext tags
+        tag_type = f"code:{languages[body[3:].split("\n")[0]]}"
     else:
-        tag = {"name":name,"type":"plaintext","aliases":[],"owner":user_id}
-        jsonIO.dump(filepath, tag)
-        with open(f"{filepath[:-5]}.txt", "w", encoding="utf-8") as file:
-            file.write(body)
+        tag_type = "plaintext"
 
-    user = users.get(user_id)
-    if name not in user["sonny_tags:tags"]:
-        user["sonny_tags:tags"].append(name)
-        users.set_field(user_id, "sonny_tags:tags", user["sonny_tags:tags"])
+    # create additional args if code tag
+    args = None
+    if tag_type.startswith("code:"):
+        body: str = body[3:-3]
+        args = [arg for arg in body.split("\n")[1].split(" ")[1:] if arg in ["user", "channel", "role"]]
+    insert_tag(name, user_id, tag_type, body, args)
 
-    return True
+def tag_size(name):
+    # get size of tag
+    query = sql.SQL("""SELECT pg_column_size({schema}.sonny_tags$tags.*)
+        AS total_row_bytes
+        FROM {schema}.sonny_tags$tags
+        WHERE name = {name}""").format(
+            schema = db.SCHEMA,
+            name = sql.Placeholder
+        )
+    size, = db.single(query, name)
+    return size
 
-def get_lang(body, name, user_id, filepath):
-    body: str = body[3:-3]
-    lines = body.split("\n")
-    lang = lines[0]
+def insert_tag(name: str, user_id: int, tag_type: str, body: str, args: list = []):
+    # insert into database
+    db.insert("sonny_tags$tags", ("name",), ("owner", "type", "content", "args"), (name, user_id, tag_type, body, args))
 
-    args = lines[1].split(" ")[1:]
-    cleaned_args = []
-    for arg in args:
-        if arg in ["user", "channel", "role"]:
-            cleaned_args.append(arg) 
+    size = tag_size(name)
 
-    if lang not in languages:
-        return False
-    extension = languages[lang]
-    body = body[len(lang):]
-    tag = {"name": name,"type": "code", "aliases": [], "owner": user_id, "lang": extension, "args": cleaned_args}
-    jsonIO.dump(filepath, tag)
-    with open(f"{filepath[:-5]}.{extension}", "w", encoding="utf-8") as file:
-        file.write(body)
-    return True
+    # ensure user exists
+    user, = db.get("sonny_tags$users", (user_id,), ("user",), ("user",))
+    if user is None:
+        db.insert("sonny_tags$users", ("user",), ("user", "tags", "space"), (user_id, [], 0))
+
+    query = sql.SQL("""UPDATE {schema}.sonny_tags$users
+        SET tags = array_append(tags, '{tag}'),
+        space = space + {tag_size}
+        WHERE user = {user_id}""").format(
+            schema = db.SCHEMA,
+            tag = sql.Placeholder(),
+            size = sql.Placeholder()
+        )
+    db.run(query, (name, size))
+
+def hidden(server_id: int, tag: str) -> bool:
+    hidden = db.get("sonny_tags$hidden_tags", (server_id, tag), ("server_id", "tag"), ("tag",),)
+    if hidden is None:
+        return True
+    return False
 
 async def search(query: str, amount: int) -> str:
     """
     Searches for any matching tags
     """
-    tags = os.listdir(f"{DIR}/data/extensions/sonny_tags/tags")
-    tags = [tag for tag in tags if tag.endswith(".json")]
-    distances = {}
-    for tag in tags:
-        tag = tag[:-5]
-        distance = Levenshtein.ratio(tag, query)
-        distances[tag] = distance
-    closest_match = heapq.nlargest(amount, distances.items(), key=lambda item: item[1])
-    out = ""
-    for k, _ in closest_match:
-        out += f"`{k}`, "
-    return out[:-2]
+    db_query = sql.SQL("""SET pg_trgm.similarity_threshold = 0.8;
+        SELECT name from {schema}.sonny_tags$tags
+        WHERE name % {query}
+        ORDER BY name <-> {query}
+        LIMIT {amount};""").format(
+            schema = db.SCHEMA,
+            query = sql.Placeholder("query"),
+            amount = sql.Placeholder("amount")
+        )
+    results = db.multiple(db_query, {"query": query, "amount": amount})
+    if results is None:
+        results = []
+    results = [i for i, in results]
+    return results
