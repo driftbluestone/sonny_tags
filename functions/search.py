@@ -13,4 +13,7 @@ async def tag_search(ctx: commands.Context, message: list):
     try: amount = int(message[1])
     except: amount = 5
     out = await tag_utils.search(message[0], amount)
-    await ctx.reply(f":information_source: {out}")
+    if len(out) == 0:
+        return await ctx.reply(":information_source: Found no similar tags")
+    out = "`, `".join(out)
+    await ctx.reply(f":information_source: `{out}`")

@@ -20,7 +20,7 @@ async def tag_add(ctx: commands.Context, message: list[str]):
     if tag in SPECIAL_TAGS or tag == "admin":
         return await ctx.reply(":warning: That tag is reserved.")
     
-    owner = await tag_utils.get_tag_owner(tag)
+    owner = tag_utils.get_tag_owner(tag)
     if owner:
         return await ctx.reply(f":warning: Tag {tag} already exists and is owned by <@{owner}>")
     

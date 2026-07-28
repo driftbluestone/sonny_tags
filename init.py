@@ -22,7 +22,7 @@ db.table("tags", ["name TEXT PRIMARY KEY",
                   "args TEXT[] DEFAULT NULL"
                 ])
 
-db.table("users", ["user BIGINT PRIMARY KEY",
+db.table("users", ["user_id BIGINT PRIMARY KEY",
                    "tags TEXT[]",
                    "space INT"])
 

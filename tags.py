@@ -30,8 +30,7 @@ async def get_tag(ctx: commands.Context, tag: str, message: list[str]):
         if not message: message = ["", ""]
         return await admin_tag(ctx, message[0].lower(), message[1:])
     
-    user_id = str(ctx.author.id)
-    data = tag_utils.get_tag_data(user_id, tag)
+    data = tag_utils.get_tag_data(tag)
 
     if data is None:
         content = f":warning: Tag **{tag}** not found"
@@ -45,8 +44,6 @@ async def get_tag(ctx: commands.Context, tag: str, message: list[str]):
     if tag_utils.hidden(ctx.guild.id, tag):
         return await ctx.reply(f":warning: Tag **{tag}** is banned in this server.")
     await parse_tag(ctx, data, message)
-
-
 
 async def admin_tag(ctx: commands.Context, tag: str, message: list[str]):
     if not await users.has_permission(ctx.guild.id, ctx.author.id, "sonny_tags:admin"):
@@ -76,10 +73,9 @@ async def parse_tag(ctx: commands.Context, data: tuple, message: list = []):
     if ctx.recursion >= 5:
         return await ctx.reply(":warning: Tag recursion limit reached.")
     
-    name = data[0]
     tag = data[2]
     if ":" in tag:
-        return await execute_code_tag(ctx, name, data, message)
+        return await execute_code_tag(ctx, data, message)
     elif tag == "alias":
         return await get_tag(ctx, data[3], message)
     elif tag == "message":
@@ -128,8 +124,8 @@ async def embed_builder(input: dict):
             return str(e)  
     return embed
 
-async def execute_code_tag(ctx: commands.Context, tag: str, data: tuple, message: list):
-    output = await container.container(ctx, tag, data, message)
+async def execute_code_tag(ctx: commands.Context, data: tuple, message: list):
+    output = await container.container(ctx, data, message)
     embed, text = await json_parser(ctx, output)
     if embed is None and text is None:
         return

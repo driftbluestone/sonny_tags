@@ -1,6 +1,5 @@
 import re
 from discord.ext import commands
-from pathlib import Path
 from psycopg import sql
 from api import users, config, db
 from utils import jsonIO
@@ -15,16 +14,21 @@ def get_tag_data(tag: str) -> tuple[str, int, str, str, list | None, list | None
     
     Name, Owner, Type, Content, Aliases, Args (code tags only).
     """
-    return db.get("sonny_tags$tags", (tag,), ("name",))
+    data = db.get("sonny_tags$tags", (tag,), ("name",), ("name", "owner", "type", "content", "aliases", "args"))
+
+    if data is None:
+        return data
+    name, owner, type, content, aliases, args = data
+    return name, int(owner), type, content, aliases, args
 
 def get_tag_owner(tag: str) -> int | None:
     """Returns tag owner or None if the tag does not exist."""
-    data, = db.get("sonny_tags$tags", (tag,), ("name",), ("owner",))
+    data = db.get("sonny_tags$tags", (tag,), ("name",), ("owner",))
     return data
 
 def get_tag_type(tag: str) -> str | None:
     """Returns tag type or None if the tag does not exist."""
-    data, = db.get("sonny_tags$tags", (tag,), ("name",), ("type",))
+    data = db.get("sonny_tags$tags", (tag,), ("name",), ("type",))
     return data
 
 async def check_creation_permission(ctx: commands.Context):
@@ -52,58 +56,60 @@ async def create_tag(user_id: int, name: str, body: str):
         tag_type = "plaintext"
 
     # create additional args if code tag
-    args = None
+    args = []
     if tag_type.startswith("code:"):
-        body: str = body[3:-3]
-        args = [arg for arg in body.split("\n")[1].split(" ")[1:] if arg in ["user", "channel", "role"]]
+        body: str = "\n".join(body.split("\n")[1:-1])
+        args = [arg for arg in body.split("\n")[0].split(" ")[1:] if arg in ["user", "channel", "role"]]
     insert_tag(name, user_id, tag_type, body, args)
 
 def tag_size(name):
     # get size of tag
-    query = sql.SQL("""SELECT pg_column_size({schema}.sonny_tags$tags.*)
+    query = sql.SQL("""SELECT pg_column_size(t)
         AS total_row_bytes
-        FROM {schema}.sonny_tags$tags
-        WHERE name = {name}""").format(
+        FROM {schema}.sonny_tags$tags AS t
+        WHERE name::text = {name};""").format(
             schema = db.SCHEMA,
-            name = sql.Placeholder
+            name = sql.Placeholder()
         )
-    size, = db.single(query, name)
+    size = db.single(query, (name,))
     return size
 
 def insert_tag(name: str, user_id: int, tag_type: str, body: str, args: list = []):
     # insert into database
-    db.insert("sonny_tags$tags", ("name",), ("owner", "type", "content", "args"), (name, user_id, tag_type, body, args))
+    db.insert("sonny_tags$tags", ("name",), ("owner", "type", "content", "aliases", "args"), (name, user_id, tag_type, body, [], args))
 
     size = tag_size(name)
 
     # ensure user exists
-    user, = db.get("sonny_tags$users", (user_id,), ("user",), ("user",))
+    user = db.get("sonny_tags$users", (user_id,), ("user_id",), ("user_id",))
     if user is None:
-        db.insert("sonny_tags$users", ("user",), ("user", "tags", "space"), (user_id, [], 0))
+        db.insert("sonny_tags$users", ("user_id",), ("user_id", "tags", "space"), (user_id, [], 0))
 
     query = sql.SQL("""UPDATE {schema}.sonny_tags$users
-        SET tags = array_append(tags, '{tag}'),
+        SET tags = array_append(tags, {tag}),
         space = space + {tag_size}
-        WHERE user = {user_id}""").format(
+        WHERE user_id = {user_id}""").format(
             schema = db.SCHEMA,
             tag = sql.Placeholder(),
-            size = sql.Placeholder()
+            tag_size = sql.Placeholder(),
+            user_id = sql.Placeholder()
         )
-    db.run(query, (name, size))
+    db.run(query, (name, size, user_id))
 
 def hidden(server_id: int, tag: str) -> bool:
     hidden = db.get("sonny_tags$hidden_tags", (server_id, tag), ("server_id", "tag"), ("tag",),)
     if hidden is None:
-        return True
-    return False
+        return False
+    return True
 
 async def search(query: str, amount: int) -> str:
     """
     Searches for any matching tags
     """
-    db_query = sql.SQL("""SET pg_trgm.similarity_threshold = 0.8;
+    db.run("SET pg_trgm.similarity_threshold = 0.8;")
+    db_query = sql.SQL("""
         SELECT name from {schema}.sonny_tags$tags
-        WHERE name % {query}
+        WHERE name %% {query}
         ORDER BY name <-> {query}
         LIMIT {amount};""").format(
             schema = db.SCHEMA,

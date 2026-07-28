@@ -23,12 +23,13 @@ async def container(ctx: commands.Context, data: tuple, message: list) -> str:
                '--cap-drop', 'ALL',
                '--network', 'none',
                '--rm', '-i', 
-               *langargs[data[1].split(":")[1]],  
+               *langargs[data[2].split(":")[1]],  
                args
             ]
     try:
         result = await asyncio.create_subprocess_exec(
             *docargs,
+            stdin =asyncio.subprocess.PIPE  ,
             stdout=asyncio.subprocess.PIPE  , 
             stderr=asyncio.subprocess.STDOUT,
         )

@@ -3,12 +3,15 @@ Creates an alias of another tag
 """
 from discord.ext import commands
 from psycopg import sql
-from api import users, db
+from api import db
 from ..strong_tag_data import *
 from .. import tag_utils
 
 @CallableModule
 async def tag_alias(ctx: commands.Context, message: list[str]):
+    return await alias(ctx, message)
+
+async def alias(ctx: commands.Context, message: list[str]):
     if not await tag_utils.check_creation_permission(ctx):
         return
     
@@ -26,18 +29,18 @@ async def tag_alias(ctx: commands.Context, message: list[str]):
     
     # If the tag is an alias, alias the new tag to the tag it's an alias of
     if type == "alias":
-        return await tag_alias(ctx, [new_tag, tag_utils.get_tag_data(tag)[3]])
+        return await alias(ctx, [new_tag, tag_utils.get_tag_data(tag)[3]])
 
     owner = tag_utils.get_tag_owner(new_tag)
     if owner:
         return await ctx.reply(f":warning: Tag {new_tag} already exists and is owned by <@{owner}>")
     
-    query = sql.SQL("UPDATE {schema}.sonny_tags$tags SET aliases = array_append(aliases, '{new_tag}') WHERE name = {tag}").format(
+    query = sql.SQL("UPDATE {schema}.sonny_tags$tags SET aliases = array_append(aliases, {new_tag}) WHERE name = {tag}").format(
         schema = db.SCHEMA,
         new_tag = sql.Placeholder(),
         tag = sql.Placeholder()
     )
-    db.run(query (new_tag, tag))
+    db.run(query, (new_tag, tag))
 
     tag_utils.insert_tag(new_tag, ctx.author.id, "alias", tag)
 
