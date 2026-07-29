@@ -29,12 +29,12 @@ async def container(ctx: commands.Context, data: tuple, message: list) -> str:
     try:
         result = await asyncio.create_subprocess_exec(
             *docargs,
-            stdin =asyncio.subprocess.PIPE  ,
-            stdout=asyncio.subprocess.PIPE  , 
-            stderr=asyncio.subprocess.STDOUT,
+            stdin =asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.PIPE, 
+            stderr=asyncio.subprocess.PIPE,
         )
-        stdout, _ = await asyncio.wait_for(result.communicate(input=data[3].encode("utf-8")), timeout=5.0)
-        output = stdout.decode()
+        stdout, stderr = await asyncio.wait_for(result.communicate(input=data[3].encode("utf-8")), timeout=5.0)
+        output = stdout.decode() + stderr.decode()
     except asyncio.TimeoutError as e:
         # Force kill the container
         kill_proc = await asyncio.create_subprocess_exec(

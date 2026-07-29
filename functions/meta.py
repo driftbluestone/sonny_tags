@@ -15,7 +15,7 @@ async def tag_raw(ctx: commands.Context, message: list):
         elif tag == "owner":
             return await ctx.reply("why dont you own some bitches")
         return await ctx.reply(f"{tag} is a special tag.")
-    data = tag_utils.get_tag_data(ctx, tag)
+    data = tag_utils.get_tag_data(tag)
     if data is None:
         return await ctx.reply(f":warning: Tag **{tag}** does not exist.")
 

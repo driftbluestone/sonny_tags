@@ -61,7 +61,7 @@ async def admin_tag(ctx: commands.Context, tag: str, message: list[str]):
         return await action(ctx, message, True)
     
     action = getattr(admin_functions, tag)
-    return await action(ctx, message, True)
+    return await action(ctx, message)
 
 async def parse_tag(ctx: commands.Context, data: tuple, message: list = []):
     """

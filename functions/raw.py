@@ -28,9 +28,9 @@ async def tag_raw(ctx: commands.Context, message: list):
     elif data[2] == "alias":
         return await ctx.reply(f":information_source: Tag **{tag}** is an alias of {data[3]}")
     elif data[2] == "plaintext":
-        file = discord.File(fp=io.StringIO(data[3]), name=f"{tag}.txt")
+        file = discord.File(fp=io.StringIO(data[3]), filename=f"{tag}.txt")
         return await ctx.reply(f":information_source: Raw data for **{tag}**", file=file)
     elif data[2].startswith("code:"):
         extension = data[2][5:]
-        file = discord.File(fp=io.StringIO(data[3]), name=f"{tag}.{extension}")
+        file = discord.File(fp=io.StringIO(data[3]), filename=f"{tag}.{extension}")
         return await ctx.reply(f":information_source: Raw data for **{tag}**", file=file)

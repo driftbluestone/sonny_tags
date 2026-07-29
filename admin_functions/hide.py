@@ -10,7 +10,7 @@ async def admin_hide(ctx: commands.Context, message: list[str]):
         return await ctx.reply(":information_source: %t admin hide `tag`")
     hidden = tag_utils.hidden(ctx.guild.id, tag)
     if hidden:
-        db.delete("sonny_tags$hidden_tags", ("server_id", "tag"), (ctx.author.id))
+        db.delete("sonny_tags$hidden_tags", ("server_id", "tag"), (ctx.guild.id, tag))
         return await ctx.reply(f":white_check_mark: Unbanned tag **{tag}**")
-    db.insert("sonny_tags$hidden_tags", ("server_id", "tag"), (), (ctx.author.id))
+    db.insert("sonny_tags$hidden_tags", ("server_id", "tag"), (), (ctx.guild.id, tag))
     return await ctx.reply(f":white_check_mark: Banned tag **{tag}**")
