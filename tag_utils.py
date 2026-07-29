@@ -46,6 +46,8 @@ async def check_creation_permission(ctx: commands.Context):
 
 async def create_tag(user_id: int, name: str, body: str):
     """Creates a tag."""
+    if db.get("sonny_tags$users", (user_id,), ("user_id",), ("space",)) >= 1024*1024:
+        return False
 
     # get type
     if re.match(r"https:\/\/discord\.com\/channels\/\d+\/\d+\/\d+", body):
@@ -61,6 +63,7 @@ async def create_tag(user_id: int, name: str, body: str):
         body: str = "\n".join(body.split("\n")[1:-1])
         args = [arg for arg in body.split("\n")[0].split(" ")[1:] if arg in ["user", "channel", "role"]]
     insert_tag(name, user_id, tag_type, body, args)
+    return True
 
 def tag_size(name):
     # get size of tag

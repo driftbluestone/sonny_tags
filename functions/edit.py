@@ -26,6 +26,6 @@ async def edit(ctx: commands.Context, message: list[str], override: bool = False
 
     if not message:
         return await ctx.reply(f":warning: Tag body cannot be empty.")
-    await tag_utils.create_tag(ctx.author.id, tag, message)
-    
+    if not await tag_utils.create_tag(ctx.author.id, tag, message):
+        return await ctx.reply(f":warning: Cannot create tag, you are out of storage.")
     return await ctx.reply(f":white_check_mark: Edited tag **{tag}**")
