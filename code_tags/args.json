@@ -2,8 +2,8 @@
     "py": ["python", "python3", "-"],
     "js": ["oven/bun", "bun", "-"],
     "ts": ["oven/bun", "bun", "-"],
-    "java": ["sonny_java", "java", "-"],
-    "rs": ["sonny_rust", "-"],
+    "java": ["sonny_java", "bash", "-c", "cat > /tmp/Main.java && java /tmp/Main.java \"$@\"", "_"],
+    "rs": ["sonny_rust"],
     "cpp": ["sonny_cpp", "-"],
     "lua": ["sonny_lua", "-"]
 }

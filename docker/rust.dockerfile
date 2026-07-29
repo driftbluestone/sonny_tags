@@ -18,9 +18,8 @@ RUN chown -R 1000:1000 /app/sandbox
 
 # 5. Create the entrypoint wrapper script using portable printf
 RUN printf '#!/bin/sh\n\
-cp "$1" /app/sandbox/src/main.rs\n\
 cd /app/sandbox\n\
-cargo run --release --offline --quiet -- "$2"\n' > /usr/local/bin/run-rust && \
+cargo run --release --offline --quiet -- "$1"\n' > /usr/local/bin/run-rust && \
 chmod +x /usr/local/bin/run-rust
 
 ENTRYPOINT ["/usr/local/bin/run-rust"]
