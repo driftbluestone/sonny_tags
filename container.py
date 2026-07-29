@@ -69,7 +69,7 @@ async def create_args(ctx: commands.Context, message: list, extended_args: list)
         if i >= len(args["args"]):
                 continue
         if arg == "user":
-            user, _ = await users.resolve_user(ctx.guild.id, args["args"][i])
+            _, user = await users.resolve_user(ctx.guild.id, args["args"][i])
             if user is False:
                 additional_args = None
             else:
