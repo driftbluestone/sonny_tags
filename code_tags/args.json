@@ -4,6 +4,6 @@
     "ts": ["oven/bun", "bun", "-"],
     "java": ["sonny_java", "bash", "-c", "cat > /tmp/Main.java && java /tmp/Main.java \"$@\"", "_"],
     "rs": ["sonny_rust"],
-    "cpp": ["sonny_cpp", "-"],
+    "cpp": ["sonny_cpp"],
     "lua": ["sonny_lua", "-"]
 }
