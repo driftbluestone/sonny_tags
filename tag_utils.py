@@ -109,7 +109,7 @@ async def search(query: str, amount: int) -> str:
     """
     Searches for any matching tags
     """
-    db.run("SET pg_trgm.similarity_threshold = 0.8;")
+    db.run("SET pg_trgm.similarity_threshold = 0.5;")
     db_query = sql.SQL("""
         SELECT name from {schema}.sonny_tags$tags
         WHERE name %% {query}
