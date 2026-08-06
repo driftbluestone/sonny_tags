@@ -18,11 +18,11 @@ async def edit(ctx: commands.Context, message: list[str], override: bool = False
     if not tag:
         return await ctx.reply(":information_source: %t edit `name` `new body`")
 
-    # Guardrails to prevent overwriting a tag you do not own.
     owner = tag_utils.get_tag_owner(tag)
     if owner is None:
         return await add(ctx, message)
-
+    
+    # Guardrails to prevent overwriting a tag you do not own.
     if not (override or ctx.author.id == owner):
         return await ctx.reply(f":warning: Tag **{tag}** is owned by <@{owner}>")
 
