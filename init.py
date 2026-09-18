@@ -11,7 +11,7 @@ permission.create("create", "Create Tags", True, True)
 permission.create("admin", "Tag Admin", True, False)
 permission.create("manage", "Manage Tags", False, False)
 config.create_field("limit_creation_to_admins", False)
-if not os.path.exists(DATA_DIR / "tags"):
+if not os.path.exists(DATA_DIR):
     os.mkdir(DATA_DIR)
 
 db.table("tags", ["name TEXT PRIMARY KEY",

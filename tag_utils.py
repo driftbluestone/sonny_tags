@@ -46,7 +46,8 @@ async def check_creation_permission(ctx: commands.Context):
 
 async def create_tag(user_id: int, name: str, body: str):
     """Creates a tag."""
-    if db.get("sonny_tags$users", (user_id,), ("user_id",), ("space",)) >= 1024*1024:
+    space = db.get("sonny_tags$users", (user_id,), ("user_id",), ("space",))
+    if space is not None and space >= 1024*1024:
         return False
 
     # get type
@@ -86,7 +87,7 @@ def insert_tag(name: str, user_id: int, tag_type: str, body: str, args: list = [
     # ensure user exists
     user = db.get("sonny_tags$users", (user_id,), ("user_id",), ("user_id",))
     if user is None:
-        db.insert("sonny_tags$users", ("user_id",), ("user_id", "tags", "space"), (user_id, [], 0))
+        db.insert("sonny_tags$users", ("user_id",), ("tags", "space"), (user_id, [], 0))
 
     query = sql.SQL("""UPDATE {schema}.sonny_tags$users
         SET tags = array_append(tags, {tag}),
