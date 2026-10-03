@@ -9,7 +9,7 @@ from ..strong_tag_data import *
 async def admin_ban(ctx: commands.Context, message: list[str]):
     user = message[0]
     if len(message) == 1:
-         type = "add;
+         type = "add";
     else:
          type = message[1]
     if (user == "") or (type == "") or (type not in ["add", "view"]):
