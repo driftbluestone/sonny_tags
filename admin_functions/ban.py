@@ -22,8 +22,8 @@ async def admin_ban(ctx: commands.Context, message: list[str]):
         type = "create"
     
     ban = ""
-    banned, = db.get("permissions", (ctx.guild.id, user.id, type), ("server_id", "user_id", "type"), ("value",))
-    db.insert("permissions", ("server_id", "user_id", "type"), ("value",), (ctx.guild.id, user.id, type, not banned))
+    banned, = db.get("permissions", (ctx.guild.id, user.id, type), ("server_id", "id", "type"), ("value",))
+    db.insert("permissions", ("server_id", "id", "type"), ("value",), (ctx.guild.id, user.id, type, not banned))
     if not banned:
         ban = "un"
     return await ctx.reply(f":white_check_mark: <@{user["id"]}> {ban}banned.")
