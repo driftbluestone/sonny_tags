@@ -8,12 +8,15 @@ from ..strong_tag_data import *
 @CallableModule
 async def admin_ban(ctx: commands.Context, message: list[str]):
     user = message[0]
-    type = message[1]
+    if len(message) == 1:
+         type = "add;
+    else:
+         type = message[1]
     if (user == "") or (type == "") or (type not in ["add", "view"]):
         return await ctx.reply(":information_source: %t admin ban `user` `add|view`")
-    user, _ = await users.resolve_user(user)
+    _, user = await users.resolve_user(ctc.guild.id, user)
     if not user:
-        return await ctx.reply(":warning: Couldn't find user.")\
+        return await ctx.reply(":warning: Couldn't find user.")
     
     if type == "add":
         type = "create"
