@@ -14,7 +14,7 @@ async def admin_ban(ctx: commands.Context, message: list[str]):
          type = message[1]
     if (user == "") or (type == "") or (type not in ["add", "view"]):
         return await ctx.reply(":information_source: %t admin ban `user` `add|view`")
-    _, user = await users.resolve_user(ctc.guild.id, user)
+    _, user = await users.resolve_user(ctx.guild.id, user)
     if not user:
         return await ctx.reply(":warning: Couldn't find user.")
     
